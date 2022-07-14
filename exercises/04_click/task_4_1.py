@@ -33,7 +33,7 @@ $ python task_4_1.py sh_cdp_n_r[1-4]* -o result.csv
 import csv
 import re
 from pprint import pprint
-
+import click
 
 def parse_sh_cdp_neighbors(command_output):
     regex = re.compile(
@@ -61,10 +61,11 @@ def parse_cdp_to_csv(filenames, output_csv):
 
 
 # Это просто заготовка, чтобы не забыть, что click надо применять к этой функции
-def cli():
-    # parse_cdp_to_csv(cdp_filenames, output_filename)
-    pass
-
+@click.command()
+@click.argument("cdp_filenames", nargs=-1, )
+@click.option("--output-filename", "-o", required=True)
+def cli(cdp_filenames, output_filename):
+    parse_cdp_to_csv(cdp_filenames, output_filename)
 
 if __name__ == "__main__":
     cli()

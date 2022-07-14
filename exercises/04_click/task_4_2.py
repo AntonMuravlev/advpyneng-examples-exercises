@@ -46,6 +46,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pprint import pprint
 import yaml
 from cisco_telnet_class import CiscoTelnet
+import click
 
 
 def send_show_command(device, command):
@@ -66,11 +67,17 @@ def send_command_to_devices(devices, command, threads):
 
 
 # Это просто заготовка, чтобы не забыть, что click надо применять к этой функции
-def cli():
-    # devices = yaml.safe_load(yaml_params)
-    # pprint(send_command_to_devices(devices, command, threads), width=120)
-    pass
+@click.command()
+@click.argument("command")
+@click.option("--yaml-params", "-y", type=click.File())
+@click.option("--threads", "-t", default=5, type=click.IntRange(1, 10))
+def cli(command, yaml_params, threads):
+    devices = yaml.safe_load(yaml_params)
+    pprint(send_command_to_devices(devices, command, threads), width=120)
 
 
 if __name__ == "__main__":
     cli()
+#    with open("devices.yaml") as f:
+#        devices = yaml.safe_load(f)
+#    pprint(send_command_to_devices(devices, "show version", 3), width=120)
