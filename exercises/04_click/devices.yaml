@@ -1,12 +1,15 @@
-- ip: 192.168.122.101
+- device_type: cisco_ios
+  host: 192.168.122.101
   username: cisco
   password: cisco
-  enable_password: cisco
-- ip: 192.168.122.102
+  secret: cisco
+- device_type: cisco_ios
+  host: 192.168.122.102
   username: cisco
   password: cisco
-  enable_password: cisco
-- ip: 192.168.122.103
+  secret: cisco
+- device_type: cisco_ios
+  host: 192.168.122.103
   username: cisco
   password: cisco
-  enable_password: cisco
+  secret: cisco

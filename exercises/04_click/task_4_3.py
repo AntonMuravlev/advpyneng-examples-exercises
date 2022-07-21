@@ -190,3 +190,72 @@ def send_command_to_devices(devices, threads, show=None, config=None):
             result_dict[device["host"]] = future.result()
     return result_dict
 
+
+@click.group()
+@click.option("--yaml-params", "-y", default="devices_task_4_3.yaml")
+@click.option("--threads", "-t", default=5, type=click.IntRange(1, 10))
+@click.pass_context
+def manage_dev(context, yaml_params, threads):
+    context.obj = {"yaml_params": yaml_params}
+    context.obj.update({"threads": threads})
+
+
+@manage_dev.command()
+@click.argument("commands")
+@click.pass_context
+def config(context, commands):
+    yaml_params = context.obj["yaml_params"]
+    threads = context.obj["threads"]
+    with open(yaml_params) as f:
+        devices = yaml.safe_load(f)
+    with open(commands) as f:
+        config = f.readlines()
+    pprint(send_command_to_devices(devices, threads, config=config))
+
+
+@manage_dev.command()
+@click.pass_context
+def ping(context):
+    yaml_params = context.obj["yaml_params"]
+    with open(yaml_params) as f:
+        devices = yaml.safe_load(f)
+    threads = context.obj["threads"]
+    ip_list = [device["host"] for device in devices]
+    reach, unreach = ping_ip_addresses(ip_list, threads)
+    print(
+        f"""
+Доступные адреса: {reach}
+Недоступные адреса {unreach}"""
+    )
+
+
+@manage_dev.command()
+@click.argument("show_command")
+@click.option("--output-file", "-o")
+@click.option("--parse", "-p", is_flag=True)
+@click.pass_context
+def show(context, show_command, output_file, parse):
+    yaml_params = context.obj["yaml_params"]
+    attributes_dict = {"Command": show_command, "Vendor": "cisco_ios"}
+    with open(yaml_params) as f:
+        devices = yaml.safe_load(f)
+    ip_list = [device["host"] for device in devices]
+    threads = context.obj["threads"]
+    if output_file:
+        with open(output_file, "w") as f:
+            f.write(str(send_command_to_devices(devices, threads, show=show_command)))
+    elif parse:
+        output = send_command_to_devices(devices, threads, show=show_command)
+        for ip in ip_list:
+            pprint(parse_command_dynamic(output[ip], attributes_dict))
+    elif output_file and parse:
+        output = send_command_to_devices(devices, threads, show=show_command)
+        parse_output = parse_command_dynamic(output, attributes_dict)
+        with open(output_file, "w") as f:
+            yaml.dump(parse_output, f)
+    else:
+        pprint(send_command_to_devices(devices, threads, show=show_command))
+
+
+if __name__ == "__main__":
+    manage_dev()

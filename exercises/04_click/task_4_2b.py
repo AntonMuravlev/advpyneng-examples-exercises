@@ -57,13 +57,36 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pprint import pprint
 import yaml
+import click
 from task_4_2 import send_show_command, send_command_to_devices
 
 
 # Это просто заготовка, чтобы не забыть, что click надо применять к этой функции
-def cli():
-    # pprint(send_command_to_devices(devices, command, threads))
-    pass
+@click.command()
+@click.argument("command")
+@click.argument("ip_list", nargs=-1, required=True)
+@click.option("--username", "-u", prompt=True)
+@click.option("--password", "-p", prompt=True, hide_input=True)
+@click.option("--secret", "-s", prompt=True, hide_input=True)
+@click.option("--threads", "-t", default=5, type=click.IntRange(1, 10))
+@click.option("--timed", is_flag=True)
+def cli(command, ip_list, username, password, secret, threads, timed):
+    devices = [
+        {
+            "ip": ip,
+            "username": username,
+            "password": password,
+            "enable_password": secret,
+        }
+        for ip in ip_list
+    ]
+    if timed:
+        start_time = datetime.now()
+        pprint(send_command_to_devices(devices, command, threads), width=120)
+        delta = (datetime.now() - start_time)
+        print(f"Время выполнения скрипта: {delta}")
+    else:
+        pprint(send_command_to_devices(devices, command, threads), width=120)
 
 
 if __name__ == "__main__":
