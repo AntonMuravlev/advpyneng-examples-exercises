@@ -27,6 +27,31 @@
 Для заданий этого раздела нет тестов для проверки тестов :)
 """
 import ipaddress
+import pytest
+from collections.abc import Iterable, Iterator
+
+
+def test_variables(new_net):
+    assert getattr(new_net, "network", None) != None, "Attribute doesn't exist"
+    assert getattr(new_net, "addresses", None) != None, "Attribute doesn't exist"
+
+def test_values(new_net, all_addresses):
+    assert new_net.network == "10.10.10.0/29", "Network attribute is wrong"
+    assert new_net.addresses == all_addresses, "Address attribute is wrong"
+
+def test_iter(new_net):
+    iter_net = new_net.__iter__()
+    assert getattr(new_net, "__iter__", None) != None, "Attribute doesn't exist"
+    assert isinstance(new_net.__iter__(), Iterator) == True, "__iter__ doesn't return Iterator"
+    assert next(iter_net) == "10.10.10.1" and next(iter_net) == "10.10.10.2", "Iter returns wrong address"
+
+def test_len(new_net):
+    assert new_net.__len__() == 6, "__len__ returns wrong value"
+
+
+def test_getitem(new_net):
+    assert new_net[1] == "10.10.10.2"
+    assert new_net[-1] == "10.10.10.6"
 
 
 class Network:
@@ -47,4 +72,4 @@ class Network:
 
 if __name__ == "__main__":
     # пример создания экземпляра
-    net1 = Network('10.1.1.192/30')
+    net1 = Network("10.1.1.192/30")
