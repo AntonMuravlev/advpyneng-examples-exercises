@@ -15,3 +15,27 @@
 
 Для заданий этого раздела нет тестов для проверки тестов :)
 """
+
+
+import pytest
+import yaml
+from pprint import pprint
+from scrapli import Scrapli
+
+
+with open("devices_task5.yaml") as f:
+    devices = yaml.safe_load(f)
+ip_list = [device["host"] for device in devices]
+
+
+@pytest.fixture(scope="session", params=devices, ids=ip_list)
+def ssh_connection(request):
+    ssh = Scrapli(**request.param)
+    ssh.open()
+    yield ssh
+    ssh.close()
+
+
+def test_route_table(ssh_connection):
+    reply = ssh_connection.send_command("sh ip route 192.168.122.0 255.255.255.0")
+    assert "% Network not in table" not in reply.result
