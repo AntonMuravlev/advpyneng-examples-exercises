@@ -37,6 +37,7 @@ Telnet или неправильный пароль соответственно
 Для заданий этого раздела нет тестов для проверки тестов :)
 """
 import socket
+import pytest
 from pprint import pprint
 
 import yaml
@@ -66,8 +67,33 @@ def send_show(device, show_commands):
 if __name__ == "__main__":
     with open("devices.yaml") as f:
         devices = yaml.safe_load(f)
-    for dev_type, device_list in devices.items():
-        print(dev_type.upper())
-        for dev in device_list:
+        for dev_type, device_list in devices.items():
+            print(dev_type.upper())
+        for dev in devices:
             output = send_show(dev, "sh clock")
             pprint(output, width=120)
+
+
+def test_output_type(capsys, device_params):
+    output = send_show(device_params, "show clock")
+    error_template = (
+        f"Device {device_params['host']}, Transport {device_params['transport']}, Error"
+    )
+    out, err = capsys.readouterr()
+    if "Error" in out:
+        assert output == None, "Out should be None due exception"
+        assert error_template in out, "Error message is wrong"
+    else:
+        assert isinstance(output, dict), "Out isn't a dict"
+
+
+def test_output_value(input_output, first_dev_params):
+    one_command, commands_list = input_output
+    one_command_out = send_show(first_dev_params, list(one_command.keys())[0])
+    assert one_command_out == one_command, "One command is sent | Out has a wrong value"
+    out_dict = {}
+    for command in commands_list.keys():
+        out_dict.update(send_show(first_dev_params, command))
+    assert (
+        commands_list == out_dict
+    ), "Multiple commands are sent | Out has a wrong value"

@@ -37,6 +37,7 @@ import telnetlib
 import re
 
 import yaml
+import pytest
 
 
 class CiscoTelnet:
@@ -72,8 +73,8 @@ class CiscoTelnet:
             self._write_line("enable")
             self._read_until("Password")
             self._write_line(secret)
-            self._read_until("#")
-            self.prompt = "#"
+            if "#" in self._read_until("#"):
+                self.prompt = "#"
         elif match_index == 1:
             self.prompt = "#"
         if disable_paging:
@@ -103,12 +104,86 @@ class CiscoTelnet:
 
 if __name__ == "__main__":
     r1_params = {
-        "host": "192.168.100.1",
+        "host": "192.168.122.101",
         "username": "cisco",
         "password": "cisco",
         "secret": "cisco",
     }
     with CiscoTelnet(**r1_params) as r1:
-        print(r1.send_show_command("sh clock"))
-        print(r1.send_show_command("sh ip int br"))
+        #        print(r1.send_show_command("sh clock"))
+        #        print(r1.send_show_command("sh ip int br"))
         print(r1.send_show_command("sh run | i hostname"))
+
+
+def test_no_route():
+    r1_params = {
+        "host": "192.168.122.122",
+        "username": "cisco",
+        "password": "cisco",
+        "secret": "cisco",
+    }
+    with pytest.raises((OSError)) as exc:
+        r1 = CiscoTelnet(**r1_params)
+
+
+def test_telnet_blocked():
+    r1_params = {
+        "host": "192.168.122.105",
+        "username": "cisco",
+        "password": "cisco",
+        "secret": "cisco",
+    }
+    with pytest.raises((OSError)) as exc:
+        r1 = CiscoTelnet(**r1_params)
+
+
+def test_wrong_password():
+    r1_params = {
+        "host": "192.168.122.101",
+        "username": "cisco",
+        "password": "123",
+        "secret": "cisco",
+    }
+    with pytest.raises((ValueError)) as exc:
+        r1 = CiscoTelnet(**r1_params)
+
+
+def test_instance():
+    r1_params = {
+        "host": "192.168.122.101",
+        "username": "cisco",
+        "password": "cisco",
+        "secret": "cisco",
+    }
+    try:
+        r1 = CiscoTelnet(**r1_params)
+    except Exception:
+        print("Instanse isn't created")
+    assert r1.prompt is not None
+
+
+def test_secret_param(secret_params):
+    r1 = CiscoTelnet(**secret_params)
+    assert r1.prompt == "#" or r1.prompt == ">"
+    if r1.prompt == "#":
+        out = r1.send_show_command("sh run | i hostname")
+        assert "%" not in out
+
+
+def test_send_show_command(correct_params):
+    out_template = (
+        "sh int descr\n"
+        "Interface                      Status         Protocol Description\n"
+        "Et0/0                          up             up       \n"
+        "Et0/1                          admin down     down     \n"
+        "Et0/2                          admin down     down     \n"
+        "Et0/3                          admin down     down     \n"
+        "R1#"
+    )
+    r1 = CiscoTelnet(**correct_params)
+    assert r1.send_show_command("sh int descr") == out_template, "Output doesn't match"
+
+
+def test_context_manager(correct_params):
+    with CiscoTelnet(**correct_params) as r1:
+        assert r1.prompt, "There is no prompt"
