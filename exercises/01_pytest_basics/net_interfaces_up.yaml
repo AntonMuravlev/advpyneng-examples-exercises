@@ -1,10 +1,8 @@
-192.168.100.1:
- - Tunnel0
+192.168.122.101:
  - Loopback1
+ - Loopback2
  - Ethernet0/0
- - Ethernet0/1.100
- - Ethernet0/1.200
-192.168.100.2:
+192.168.122.102:
  - Loopback0
  - Ethernet0/0
  - Ethernet0/1
