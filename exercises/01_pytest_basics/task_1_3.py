@@ -74,6 +74,55 @@ if __name__ == "__main__":
             pprint(output, width=120)
 
 
+with open("devices.yaml") as f:
+    devices = yaml.safe_load(f)
+
+
+@pytest.fixture(params=devices)
+def device_params(request):
+    return request.param
+
+
+@pytest.fixture()
+def input_output():
+    one_command = {
+        "show ip int br": "Interface                  IP-Address      OK? Method "
+        "Status                Protocol\n"
+        "Ethernet0/0                192.168.122.101 YES NVRAM  "
+        "up                    up\n"
+        "Ethernet0/1                unassigned      YES NVRAM  "
+        "administratively down down\n"
+        "Ethernet0/2                unassigned      YES NVRAM  "
+        "administratively down down\n"
+        "Ethernet0/3                unassigned      YES NVRAM  "
+        "administratively down down"
+    }
+    commands_list = {
+        "show ip int br": "Interface                  IP-Address      OK? Method "
+        "Status                Protocol\n"
+        "Ethernet0/0                192.168.122.101 YES NVRAM  "
+        "up                    up\n"
+        "Ethernet0/1                unassigned      YES NVRAM  "
+        "administratively down down\n"
+        "Ethernet0/2                unassigned      YES NVRAM  "
+        "administratively down down\n"
+        "Ethernet0/3                unassigned      YES NVRAM  "
+        "administratively down down",
+        "show int descr": "Interface                      Status         Protocol "
+        "Description\n"
+        "Et0/0                          up             up\n"
+        "Et0/1                          admin down     down\n"
+        "Et0/2                          admin down     down\n"
+        "Et0/3                          admin down     down",
+    }
+    return one_command, commands_list
+
+
+@pytest.fixture()
+def first_dev_params():
+    return devices[0]
+
+
 def test_output_type(capsys, device_params):
     output = send_show(device_params, "show clock")
     error_template = (

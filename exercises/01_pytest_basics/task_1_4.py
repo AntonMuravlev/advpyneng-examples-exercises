@@ -115,6 +115,43 @@ if __name__ == "__main__":
         print(r1.send_show_command("sh run | i hostname"))
 
 
+secret_params_list = [
+    {
+        "host": "192.168.122.101",
+        "username": "cisco",
+        "password": "cisco",
+        "secret": "cisco",
+    },
+    {
+        "host": "192.168.122.101",
+        "username": "cisco",
+        "password": "cisco",
+        "secret": "ciscoi",
+    },
+    {
+        "host": "192.168.122.101",
+        "username": "cisco",
+        "password": "cisco",
+    },
+]
+
+
+@pytest.fixture(params=secret_params_list)
+def secret_params(request):
+    return request.param
+
+
+@pytest.fixture()
+def correct_params():
+    r1_params = {
+        "host": "192.168.122.101",
+        "username": "cisco",
+        "password": "cisco",
+        "secret": "cisco",
+    }
+    return r1_params
+
+
 def test_no_route():
     r1_params = {
         "host": "192.168.122.122",

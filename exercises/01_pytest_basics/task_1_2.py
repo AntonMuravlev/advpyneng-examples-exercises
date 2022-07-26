@@ -31,6 +31,25 @@ import pytest
 from collections.abc import Iterable, Iterator
 
 
+@pytest.fixture()
+def new_net():
+    net = Network("10.10.10.0/29")
+    return net
+
+
+@pytest.fixture()
+def all_addresses():
+    addresses = (
+        "10.10.10.1",
+        "10.10.10.2",
+        "10.10.10.3",
+        "10.10.10.4",
+        "10.10.10.5",
+        "10.10.10.6",
+    )
+    return addresses
+
+
 def test_variables(new_net):
     assert getattr(new_net, "network", None) != None, "Attribute doesn't exist"
     assert getattr(new_net, "addresses", None) != None, "Attribute doesn't exist"
