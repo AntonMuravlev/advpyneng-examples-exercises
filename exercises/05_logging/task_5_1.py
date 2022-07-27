@@ -76,18 +76,30 @@ from itertools import repeat
 import yaml
 from netmiko import ConnectHandler
 from netmiko.ssh_exception import SSHException
+import logging
+
+logging.basicConfig(
+    format="%(threadName)s %(asctime)s %(name)s %(levelname)s: %(message)s",
+    level=logging.DEBUG,
+)
+logging.getLogger("paramiko").setLevel(logging.WARNING)
+logging.getLogger("netmiko").setLevel(logging.WARNING)
 
 
 def send_show(device_dict, command):
     ip = device_dict["host"]
+    logging.debug(f"Connecting to {ip}")
     try:
         with ConnectHandler(**device_dict) as ssh:
             ssh.enable()
             result = ssh.send_command(command)
+            logging.debug(f"Response is received from {ip}")
         return result
     except SSHException as error:
+        logging.warning(f"Error occured during connection to {ip}\n{error}")
         return error
     except ValueError as error:
+        logging.warning(f"Secret password is incorrect - device {ip}\n{error}")
         return error
 
 

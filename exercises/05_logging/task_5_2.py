@@ -19,10 +19,16 @@ R1#
 Для заданий этого раздела нет тестов.
 """
 from cisco_telnet_class import CiscoTelnet
+import logging
 
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG,
+    datefmt="%H:%M:%S"
+)
 
 if __name__ == "__main__":
     r1 = CiscoTelnet(
-        "192.168.100.1", username="cisco", password="cisco", enable_password="cisco"
+        "192.168.122.101", username="cisco", password="cisco", enable_password="cisco"
     )
     print(r1.send_show_command("sh clock"))
