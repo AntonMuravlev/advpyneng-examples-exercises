@@ -241,18 +241,22 @@ def show(context, show_command, output_file, parse):
         devices = yaml.safe_load(f)
     ip_list = [device["host"] for device in devices]
     threads = context.obj["threads"]
-    if output_file:
+    if output_file and parse:
+        output = send_command_to_devices(devices, threads, show=show_command)
+        parsed_data_dict = {
+            ip: parse_command_dynamic(output[ip], attributes_dict) for ip in ip_list
+        }
+        with open(output_file, "w") as f:
+            yaml.dump(parsed_data_dict, f, default_flow_style=False)
+    elif output_file:
         with open(output_file, "w") as f:
             f.write(str(send_command_to_devices(devices, threads, show=show_command)))
     elif parse:
         output = send_command_to_devices(devices, threads, show=show_command)
-        for ip in ip_list:
-            pprint(parse_command_dynamic(output[ip], attributes_dict))
-    elif output_file and parse:
-        output = send_command_to_devices(devices, threads, show=show_command)
-        parse_output = parse_command_dynamic(output, attributes_dict)
-        with open(output_file, "w") as f:
-            yaml.dump(parse_output, f)
+        parsed_data_dict = {
+            ip: parse_command_dynamic(output[ip], attributes_dict) for ip in ip_list
+        }
+        pprint(parsed_data_dict)
     else:
         pprint(send_command_to_devices(devices, threads, show=show_command))
 

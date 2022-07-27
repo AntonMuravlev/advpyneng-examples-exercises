@@ -1,0 +1,71 @@
+192.168.122.101:
+- interface: Ethernet0/0
+  ip: 192.168.122.101
+  protocol: up
+  status: up
+- interface: Ethernet0/1
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Ethernet0/2
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Ethernet0/3
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Loopback1
+  ip: 10.10.10.1
+  protocol: up
+  status: up
+- interface: Loopback2
+  ip: 10.10.10.2
+  protocol: up
+  status: up
+- interface: Loopback99
+  ip: 10.0.99.1
+  protocol: up
+  status: up
+192.168.122.102:
+- interface: Ethernet0/0
+  ip: 192.168.122.102
+  protocol: up
+  status: up
+- interface: Ethernet0/1
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Ethernet0/2
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Ethernet0/3
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Loopback99
+  ip: 10.0.99.1
+  protocol: up
+  status: up
+192.168.122.103:
+- interface: Ethernet0/0
+  ip: 192.168.122.103
+  protocol: up
+  status: up
+- interface: Ethernet0/1
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Ethernet0/2
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Ethernet0/3
+  ip: unassigned
+  protocol: down
+  status: administratively down
+- interface: Loopback99
+  ip: 10.0.99.1
+  protocol: up
+  status: up
