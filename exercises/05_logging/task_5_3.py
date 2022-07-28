@@ -59,6 +59,33 @@ from tabulate import tabulate
 import yaml
 from netmiko import ConnectHandler
 from netmiko.ssh_exception import SSHException
+import logging
+
+# create log
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+
+# create formatters
+formatter_stderr = logging.Formatter(
+    "{asctime} - {name} - {levelname} - {message}", datefmt="%H:%M:%S", style="{"
+)
+formatter_file = logging.Formatter(
+    "{asctime} - {name} - {levelname} - {message}", style="{"
+)
+
+# create stderr handler
+stderr = logging.StreamHandler()
+stderr.setLevel(logging.INFO)
+stderr.setFormatter(formatter_stderr)
+
+# create file handler
+logfile = logging.FileHandler("task_5_3_log.log")
+logfile.setLevel(logging.DEBUG)
+logfile.setFormatter(formatter_file)
+
+
+log.addHandler(stderr)
+log.addHandler(logfile)
 
 
 def parse_cdp(output):
@@ -90,13 +117,14 @@ def explore_topology(start_device_ip, ssh_params):
     visited_hostnames = set()
     topology = []
     todo = [start_device_ip]
-
+    log.info(f"Discovery starts. The first one is {start_device_ip}")
     while len(todo) > 0:
         current_ip = todo.pop(0)
         if ip_hostname_dict.get(current_ip) in visited_hostnames:
+            log.debug(f"We already passed {neighbor}")
             continue
         ssh_params["host"] = current_ip
-
+        log.info(f"SSH connecting to {current_ip}")
         current_host, sh_cdp_neighbors_output = connect_ssh(
             ssh_params, "sh cdp neig det"
         )
@@ -110,6 +138,7 @@ def explore_topology(start_device_ip, ssh_params):
             topology.append({"local_host": current_host, **neighbor_link})
 
             if neighbor not in visited_hostnames:
+                log.debug(f"There is a new one - {neighbor}, adding to ToDo")
                 todo.append(neighbor_ip)
     return topology
 
@@ -122,10 +151,10 @@ if __name__ == "__main__":
         "username": "cisco",
         "timeout": 4,
     }
-    with open("devices.yaml") as f:
+    with open("devices_task_5_3.yaml") as f:
         devices = yaml.safe_load(f)
 
-    start = "192.168.100.1"
+    start = "192.168.122.101"
     topology = explore_topology(start, ssh_params=common_params)
     pprint(topology, width=120)
     print(tabulate(topology, headers="keys"))

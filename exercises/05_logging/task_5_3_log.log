@@ -1,0 +1,12 @@
+2022-07-28 11:28:21,761 - __main__ - INFO - Discovery starts. The first one is 192.168.122.101
+2022-07-28 11:28:21,761 - __main__ - INFO - SSH connecting to 192.168.122.101
+2022-07-28 11:28:23,078 - __main__ - DEBUG - There is a new one - R2, adding to ToDo
+2022-07-28 11:28:23,078 - __main__ - DEBUG - There is a new one - R5, adding to ToDo
+2022-07-28 11:28:23,078 - __main__ - INFO - SSH connecting to 192.168.200.3
+2022-07-28 11:28:24,437 - __main__ - DEBUG - There is a new one - R3, adding to ToDo
+2022-07-28 11:28:24,437 - __main__ - INFO - SSH connecting to 192.168.200.1
+2022-07-28 11:28:25,963 - __main__ - DEBUG - There is a new one - R4, adding to ToDo
+2022-07-28 11:28:25,964 - __main__ - INFO - SSH connecting to 192.168.200.5
+2022-07-28 11:28:27,376 - __main__ - DEBUG - There is a new one - R4, adding to ToDo
+2022-07-28 11:28:27,376 - __main__ - INFO - SSH connecting to 192.168.200.7
+2022-07-28 11:28:28,706 - __main__ - DEBUG - We already passed R5
