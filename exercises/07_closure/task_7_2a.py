@@ -34,3 +34,15 @@ Out[9]: 84
 In [10]: toys.buy(24)
 Out[10]: 108
 """
+
+
+def count_total():
+    total = 0
+
+    def inner(money):
+        nonlocal total
+        total += money
+        return total
+
+    inner.buy = inner
+    return inner
