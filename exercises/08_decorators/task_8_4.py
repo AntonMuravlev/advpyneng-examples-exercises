@@ -54,13 +54,32 @@ from netmiko import (
 
 device_params = {
     "device_type": "cisco_ios",
-    "host": "192.168.100.1",
-    "username": "cisco",
+    "host": "192.168.122.101",
+    "username": "cisco0",
     "password": "cisco",
     "secret": "cisco",
 }
 
 
+def retry(times):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            nonlocal times
+            first_out = func(*args, **kwargs)
+            if not first_out:
+                while times > 0:
+                    out = func(*args, **kwargs)
+                    if out:
+                        return out
+                    times -= 1
+            return first_out
+
+        return wrapper
+
+    return decorator
+
+
+@retry(times=3)
 def send_show_command(device, show_command):
     print("Подключаюсь к", device["host"])
     try:

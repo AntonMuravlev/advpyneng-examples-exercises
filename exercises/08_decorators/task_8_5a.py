@@ -43,10 +43,28 @@ Out[16]: 5
 
 """
 
+from functools import wraps
 
+
+def count_calls(func):
+
+    def wrapper(*args, **kwargs):
+        wrapper.total_calls += 1
+        return func(*args, **kwargs)
+    wrapper.total_calls = 0
+    return wrapper
+
+
+@count_calls
 def f1():
     return True
 
 
 def f2():
     return False
+
+
+if __name__ == "__main__":
+    for i in range(10):
+        f1()
+    print(f1.total_calls)

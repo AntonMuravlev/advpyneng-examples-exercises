@@ -31,16 +31,29 @@ In [4]: print(send_show_command(device_params, 'sh clock'))
 """
 
 from netmiko import ConnectHandler
+from datetime import datetime
 
 device_params = {
     "device_type": "cisco_ios",
-    "host": "192.168.100.1",
+    "host": "192.168.122.101",
     "username": "cisco",
     "password": "cisco",
     "secret": "cisco",
 }
 
 
+def timecode(func):
+    def inner(*args, **kwargs):
+        start_time = datetime.now()
+        func(*args, **kwargs)
+        delta = datetime.now() - start_time
+        print(f"Функция выполнялась: {delta}")
+        return func(*args, **kwargs)
+
+    return inner
+
+
+@timecode
 def send_show_command(params, command):
     with ConnectHandler(**params) as ssh:
         ssh.enable()

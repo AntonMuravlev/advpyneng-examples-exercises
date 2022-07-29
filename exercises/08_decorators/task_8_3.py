@@ -55,17 +55,41 @@ In [8]: print(send_show_command(device_params, 'sh clock', verbose=False))
 
 from netmiko import ConnectHandler
 
-device_params = {
-    "device_type": "cisco_ios",
-    "host": "192.168.100.1",
-    "username": "cisco",
-    "password": "cisco",
-    "secret": "cisco",
-}
+
+def add_verbose(func):
+    print(f"Вызываем {func.__name__}")
+
+    def wrapper(*args, verbose=False, **kwargs):
+        if verbose:
+            if args and kwargs:
+                print(f"Позиционные аргументы: {args}")
+                print(f"Ключевые аргументы: {kwargs}")
+            elif args:
+                print(f"Позиционные аргументы: {args}")
+            elif kwargs:
+                print(f"Ключевые аргументы: {kwargs}")
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
+@add_verbose
 def send_show_command(params, command):
     with ConnectHandler(**params) as ssh:
         ssh.enable()
         result = ssh.send_command(command)
     return result
+
+
+if __name__ == "__main__":
+    device_params = {
+        "device_type": "cisco_ios",
+        "host": "192.168.122.101",
+        "username": "cisco",
+        "password": "cisco",
+        "secret": "cisco",
+    }
+    send_show_command(device_params, "show clock", verbose=True)
+    send_show_command(device_params, command="show clock", verbose=True)
+    send_show_command(params=device_params, command="show clock", verbose=True)
+    send_show_command(device_params, "show clock", verbose=False)

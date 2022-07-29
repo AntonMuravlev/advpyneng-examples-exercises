@@ -45,9 +45,27 @@ In [16]: for _ in range(5):
 """
 
 
+def count_calls(func):
+    func_count = 0
+
+    def wrapper(*args, **kwargs):
+        nonlocal func_count
+        func_count += 1
+        print(f"Всего вызовов: {func_count}")
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+@count_calls
 def f1():
     return True
 
 
 def f2():
     return False
+
+
+if __name__ == "__main__":
+    for i in range(10):
+        f1()

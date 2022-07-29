@@ -47,7 +47,7 @@ In [6]: send_show_command(device_params, 'sh clock')
 
 Ограничение: Функцию send_show_command менять нельзя, можно только применить декоратор.
 """
-
+from time import sleep
 from netmiko import (
     ConnectHandler,
     NetMikoAuthenticationException,
@@ -56,13 +56,34 @@ from netmiko import (
 
 device_params = {
     "device_type": "cisco_ios",
-    "host": "192.168.100.1",
-    "username": "cisco",
+    "host": "192.168.122.101",
+    "username": "cisco0",
     "password": "cisco",
     "secret": "cisco",
 }
 
 
+def retry(times, delay):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            nonlocal times
+            first_out = func(*args, **kwargs)
+            if not first_out:
+                while times > 0:
+                    print(f"Повторное подключение через {delay} сек")
+                    sleep(delay)
+                    out = func(*args, **kwargs)
+                    if out:
+                        return out
+                    times -= 1
+            return first_out
+
+        return wrapper
+
+    return decorator
+
+
+@retry(times=3, delay=2)
 def send_show_command(device, show_command):
     print("Подключаюсь к", device["host"])
     try:
@@ -70,8 +91,8 @@ def send_show_command(device, show_command):
             ssh.enable()
             result = ssh.send_command(show_command)
         return result
-    except (NetMikoAuthenticationException, NetMikoTimeoutException):
-        return None
+    except (NetMikoAuthenticationException, NetMikoTimeoutException) as error:
+        print(error)
 
 
 if __name__ == "__main__":
