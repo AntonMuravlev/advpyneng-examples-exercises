@@ -50,8 +50,7 @@ Out[11]: True
 """
 import ipaddress
 
-# def create_ge(eq, lt):
-#    return eq
+
 def create_ne(func):
     def wrapper(*args, **kwargs):
         return not func(*args, **kwargs)
@@ -104,7 +103,7 @@ def total_order(cls):
     if "__lt__" not in list(vars(cls)):
         raise ValueError("Method __lt__ doesn't exist")
     setattr(cls, "__ne__", create_ne(cls.__eq__))
-    setattr(cls, "__gt__", create_gt(cls.__eq__,cls.__lt__))
+    setattr(cls, "__gt__", create_gt(cls.__eq__, cls.__lt__))
     setattr(cls, "__ge__", create_ge(cls.__eq__, cls.__lt__))
     setattr(cls, "__le__", create_le(cls.__eq__, cls.__lt__))
     return cls

@@ -119,6 +119,36 @@ ValueError                                Traceback (most recent call last)
 ValueError: IP-адрес свободен
 
 """
+import ipaddress
+
+class IPv4Network:
+    def __init__(self, network, gw=None):
+        _net = ipaddress.ip_network(network)
+
+        self.network = network
+        self.broadcast = str(_net.broadcast_address)
+        self.gw = gw
+        self.hosts = tuple([str(h) for h in _net.hosts()])
+        self.allocated = set()
+        self.unassigned = set(self.hosts)
+        if self.gw:
+            self.allocated.add(self.gw)
+            self.unassigned.remove(self.gw)
+
+
+    def allocate_ip(self, ip):
+        if ip in self.hosts and ip not in self.allocated:
+            self.allocated.add(ip)
+            self.unassigned.remove(ip)
+        else:
+            raise ValueError
+
+    def free_ip(self, ip):
+        if ip in self.hosts and ip in self.allocated:
+            self.allocated.remove(ip)
+            self.unassigned.add(ip)
+        else:
+            raise ValueError
 
 
 if __name__ == "__main__":
