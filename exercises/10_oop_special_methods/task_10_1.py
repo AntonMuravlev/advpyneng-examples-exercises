@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Задание 10.1
 
 Скопировать класс IPv4Network из задания 9.1 и добавить ему все методы,
@@ -57,4 +57,58 @@ Out[13]: IPv4Network(8.8.4.0/29)
 In [14]: str(net1)
 Out[14]: 'IPv4Network 8.8.4.0/29'
 
-'''
+"""
+import ipaddress
+
+
+class IPv4Network:
+    def __init__(self, network, gw=None):
+        _net = ipaddress.ip_network(network)
+
+        self.network = network
+        self.broadcast = str(_net.broadcast_address)
+        self.gw = gw
+        self.hosts = tuple([str(h) for h in _net.hosts()])
+        self.allocated = set()
+        self.unassigned = set(self.hosts)
+        if self.gw:
+            self.allocated.add(self.gw)
+            self.unassigned.remove(self.gw)
+
+    def __str__(self):
+        return f"IPv4Network {self.network}"
+
+    def __repr__(self):
+        return f"IPv4Network({self.network})"
+
+    def __getitem__(self, item):
+        return self.hosts[item]
+
+    def __len__(self):
+        return len(self.hosts)
+
+    def __contains__(self, value):
+        return True if value in self.hosts else False
+
+    def __iter__(self):
+        return iter(self.hosts)
+
+    def count(self, value):
+        return self.hosts.count(value)
+
+    def index(self, value):
+        return self.hosts.index(value)
+
+    def allocate_ip(self, ip):
+        if ip in self.hosts and ip not in self.allocated:
+            self.allocated.add(ip)
+            self.unassigned.remove(ip)
+        else:
+            raise ValueError
+
+    def free_ip(self, ip):
+        if ip in self.hosts and ip in self.allocated:
+            self.allocated.remove(ip)
+            self.unassigned.add(ip)
+        else:
+            raise ValueError
