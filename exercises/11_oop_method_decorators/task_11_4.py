@@ -54,3 +54,34 @@ In [7]: nata.password = 'sadf'
 In [8]: nata.password = 'sadfsadfsadf'
 Пароль установлен
 """
+
+
+class User:
+    def __init__(self, username):
+        self._username = username
+        self._password = None
+
+    @property
+    def username(self):
+        return self._username
+
+    @property
+    def password(self):
+        if not self._password:
+            raise ValueError("Надо установить пароль!")
+        return self._password
+
+    @password.setter
+    def password(self, new_pass):
+        check_flag = True
+        while check_flag:
+            if len(new_pass) < 8:
+                new_pass = input("Пароль слишком короткий. Введите пароль еще раз: ")
+            elif self._username in new_pass:
+                new_pass = input(
+                    "Пароль содержит имя пользователя. Введите пароль еще раз:"
+                )
+            else:
+                self._password = new_pass
+                print("Пароль установлен")
+                check_flag = False

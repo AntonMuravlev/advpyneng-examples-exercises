@@ -66,6 +66,7 @@ R1#
 import time
 import telnetlib
 from collections.abc import Iterable
+from datetime import datetime
 import re
 
 import yaml
@@ -78,11 +79,15 @@ class CiscoTelnet:
         username,
         password,
         secret=None,
+        config_cache_timeout=60,
         read_timeout=5,
         encoding="utf-8",
     ):
         self.host = host
         self.username = username
+        self.config_cache_timeout = config_cache_timeout
+        self._cfg = None
+        self._last_cfg_time = None
         self.prompt = ">"
         self.read_timeout = read_timeout
         self.encoding = encoding
@@ -109,6 +114,20 @@ class CiscoTelnet:
             self.prompt = "#"
         self._write_line("terminal length 0")
         self._read_until(self.prompt)
+
+    @property
+    def cfg(self):
+        if not self._cfg:
+            self._cfg = self.send_show_command("sh run")
+            self._last_cfg_time = datetime.now()
+        elif (
+            self._cfg
+            and self.config_cache_timeout
+            < (datetime.now() - self._last_cfg_time).total_seconds()
+        ):
+            self._cfg = self.send_show_command("sh run")
+            self._last_cfg_time = datetime.now()
+        return self._cfg
 
     def _read_until(self, line):
         output = self._telnet.read_until(
@@ -146,11 +165,11 @@ class CiscoTelnet:
 
 if __name__ == "__main__":
     r1_params = {
-        "host": "192.168.100.1",
+        "host": "192.168.122.101",
         "username": "cisco",
         "password": "cisco",
         "secret": "cisco",
-        "config_cache_timeout": 4,
+        "config_cache_timeout": 7,
     }
     # пример использования cfg, до выполнения задания будет ошибка
     with CiscoTelnet(**r1_params) as r1:

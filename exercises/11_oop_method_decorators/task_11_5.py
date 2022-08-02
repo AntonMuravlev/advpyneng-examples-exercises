@@ -84,6 +84,19 @@ class CiscoTelnet:
         self._write_line("terminal length 0")
         self._read_until(self.prompt)
 
+    @classmethod
+    def input_params(cls, host=None, username=None, password=None, secret=None):
+        device_params = {
+            "host": host,
+            "username": username,
+            "password": password,
+            "secret": secret,
+        }
+        for param in device_params.keys():
+            if not device_params[param]:
+                device_params[param] = input(f"Enter {param}: ")
+        return cls(**device_params)
+
     def _read_until(self, line):
         output = self._telnet.read_until(
             line.encode(self.encoding), timeout=self.read_timeout
@@ -120,10 +133,7 @@ class CiscoTelnet:
 
 if __name__ == "__main__":
     r1_params = {
-        "host": "192.168.100.1",
-        "username": "cisco",
-        "password": "cisco",
-        "secret": "cisco",
+        "host": "192.168.122.101",
     }
-    with CiscoTelnet(**r1_params) as r1:
-        print(r1.send_show_command("sh clock"))
+    r1 = CiscoTelnet.input_params(host="192.168.122.101")
+    print(r1.send_show_command("sh clock"))

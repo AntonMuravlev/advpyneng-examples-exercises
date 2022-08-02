@@ -24,3 +24,37 @@ AttributeError                            Traceback (most recent call last)
 AttributeError: can't set attribute
 
 """
+import ipaddress
+
+class IPv4Network:
+    def __init__(self, network, gw=None):
+        self._net = ipaddress.ip_network(network)
+        self.network = network
+        self.broadcast = str(self._net.broadcast_address)
+        self.gw = gw
+        self._hosts = self.hosts
+        self.allocated = set()
+        self.unassigned = set(self.hosts)
+        if self.gw:
+            self.allocated.add(self.gw)
+            self.unassigned.remove(self.gw)
+
+    @property
+    def hosts(self):
+        return tuple([str(h) for h in self._net.hosts()])
+
+
+    def allocate_ip(self, ip):
+        if ip in self.hosts and ip not in self.allocated:
+            self.allocated.add(ip)
+            self.unassigned.remove(ip)
+        else:
+            raise ValueError
+
+    def free_ip(self, ip):
+        if ip in self.hosts and ip in self.allocated:
+            self.allocated.remove(ip)
+            self.unassigned.add(ip)
+        else:
+            raise ValueError
+
