@@ -57,7 +57,64 @@ R1(config)#logging
 R1(config)#sh i
 % Ambiguous command:  "sh i"
 """
+from base_telnet_class import TelnetBase
+import time
+import yaml
+import re
 
-# списки команд с ошибками и без:
-config_commands_errors = ["logging 0255.255.1", "logging", "sh i"]
-correct_config_commands = ["logging buffered 20010", "ip http server"]
+
+class ErrorInCommand(Exception):
+    """Custom Exception"""
+
+    pass
+
+
+class CiscoTelnet(TelnetBase):
+    def __init__(self, ip, username, password, enable, disable_paging=True):
+        super().__init__(ip, username, password)
+        if disable_paging:
+            self._write_line("terminal length 0")
+        self._read_until_regex(">")
+        self._write_line("enable")
+        self._read_until_regex("Password:")
+        self._write_line(f"{enable}")
+        self._read_until_regex("#")
+
+    def _check_error_in_command(self, cmd, cmd_out):
+        error = re.search(r"% (.*)", cmd_out)
+        if error:
+            raise ErrorInCommand(
+                f'При выполнении команды "{cmd}" на устройстве "self.ip"'
+                f"возникла ошибка {error.group(1)}"
+            )
+
+    def send_config_commands(self, commands):
+        if isinstance(commands, str):
+            commands = [commands]
+        output = ""
+        self._write_line("conf t")
+        output += self._read_until_regex("#")
+        time.sleep(0.5)
+        for cmd in commands:
+            self._write_line(cmd)
+            time.sleep(0.5)
+            output += self._read_until_regex("#")
+            self._check_error_in_command(cmd, output)
+        self._write_line("end")
+        output += self._read_until_regex("#")
+        return output
+
+    def send_show_command(self, command):
+        self._write_line(command)
+        output = self._read_until_regex("#")
+        self._check_error_in_command(command, output)
+        return output
+
+
+if __name__ == "__main__":
+    with open("devices.yaml") as f:
+        devices = yaml.safe_load(f)
+        r1_params = devices[0]
+    r1 = CiscoTelnet(**r1_params)
+    print(r1.send_config_commands(["logging 0255.255.1", "logging", "sh i"]))
+    print(r1.send_show_command("sh sdgdsg"))

@@ -46,7 +46,21 @@ Out[11]: True
 import ipaddress
 
 
-class IPAddress:
+class OrderingMixin:
+    def __ge__(self, other):
+        return self.__eq__(other) or self.__gt__(other)
+
+    def __ne__(self, other):
+        return not (self.__eq__(other))
+
+    def __le__(self, other):
+        return self.__eq__(other) or self.__lt__(other)
+
+    def __gt__(self, other):
+        return not (self.__eq__(other) or self.__lt__(other))
+
+
+class IPAddress(OrderingMixin):
     def __init__(self, ip):
         self._ip = int(ipaddress.ip_address(ip))
 

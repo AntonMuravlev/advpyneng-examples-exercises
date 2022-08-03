@@ -38,3 +38,50 @@ Out[4]: 'conf t\r\nEnter configuration commands, one per line.  End with CNTL/Z.
 Тест берет значения из файла devices.yaml, поэтому если
 для заданий используются другие адреса/логины, надо заменить их там.
 """
+from base_telnet_class import TelnetBase
+import time
+import yaml
+
+
+class CiscoTelnet(TelnetBase):
+    def __init__(self, ip, username, password, enable, disable_paging=True):
+        super().__init__(ip, username, password)
+        if disable_paging:
+            self._write_line("terminal length 0")
+        self._read_until_regex(">")
+        self._write_line("enable")
+        self._read_until_regex("Password:")
+        self._write_line(f"{enable}")
+        self._read_until_regex("#")
+
+    def send_config_commands(self, commands):
+        if isinstance(commands, str):
+            commands = [commands]
+        output = ""
+        self._write_line("conf t")
+        output += self._read_until_regex("#")
+        time.sleep(0.5)
+        for cmd in commands:
+            self._write_line(cmd)
+            time.sleep(0.5)
+            output += self._read_until_regex("#")
+        self._write_line("end")
+        output += self._read_until_regex("#")
+        return output
+
+    def send_show_command(self, command):
+        self._write_line(command)
+        return self._read_until_regex("#")
+
+
+if __name__ == "__main__":
+    with open("devices.yaml") as f:
+        devices = yaml.safe_load(f)
+        r1_params = devices[0]
+    r1 = CiscoTelnet(**r1_params)
+    print(
+        r1.send_config_commands(
+            ["interface loopback123", "ip address 123.1.2.3 255.255.255.255"]
+        )
+    )
+    print(r1.send_show_command("sh ip int br"))

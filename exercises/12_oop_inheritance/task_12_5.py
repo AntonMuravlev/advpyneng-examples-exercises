@@ -27,17 +27,59 @@ Out[5]: [__main__.A, __main__.InheritanceMixin, object]
 """
 
 
-class A:
+class InheritanceMixin:
+    @classmethod
+    def subclasses(cls):
+        return cls.__subclasses__()
+
+    @classmethod
+    def superclasses(cls):
+        return list(cls.__mro__)
+
+class A(InheritanceMixin):
     pass
 
 
-class B(A):
+class B(A, InheritanceMixin):
     pass
 
 
-class C:
+class C(InheritanceMixin):
     pass
 
 
-class D(A, C):
+class D(A, C, InheritanceMixin):
     pass
+
+
+if __name__ == "__main__":
+    a1 = A()
+    b1 = B()
+    c1 = C()
+    d1 = D()
+    print("class A")
+    print(A.subclasses())
+    print(A.superclasses())
+    print("instance a1")
+    print(a1.subclasses())
+    print(a1.superclasses())
+
+    print("class B")
+    print(B.subclasses())
+    print(B.superclasses())
+    print(b1.subclasses())
+    print(b1.superclasses())
+
+    print("class C")
+    print(C.subclasses())
+    print(C.superclasses())
+    print("instance a1")
+    print(c1.subclasses())
+    print(c1.superclasses())
+
+    print("class D")
+    print(D.subclasses())
+    print(D.superclasses())
+    print("instance a1")
+    print(d1.subclasses())
+    print(d1.superclasses())
