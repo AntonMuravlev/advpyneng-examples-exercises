@@ -131,16 +131,100 @@ Out[16]: 6
 
 """
 
-example1 = {
-    ("R1", "Eth0/0"): ("SW1", "Eth0/1"),
-    ("R2", "Eth0/0"): ("SW1", "Eth0/2"),
-    ("R2", "Eth0/1"): ("SW2", "Eth0/11"),
-    ("R3", "Eth0/0"): ("SW1", "Eth0/3"),
-    ("R4", "Eth0/0"): ("R3", "Eth0/1"),
-    ("R5", "Eth0/0"): ("R3", "Eth0/2"),
-    ("SW1", "Eth0/1"): ("R1", "Eth0/0"),
-    ("SW1", "Eth0/2"): ("R2", "Eth0/0"),
-    ("SW1", "Eth0/3"): ("R3", "Eth0/0"),
-}
+from typing import Dict, List, Tuple
+from collections.abc import MutableMapping
+from pprint import pprint
 
-example2 = {("R1", "Eth0/4"): ("R7", "Eth0/0"), ("R1", "Eth0/6"): ("R9", "Eth0/0")}
+
+class Topology(MutableMapping):
+    def __init__(self, topology_dict: Dict[Tuple[str, str], Tuple[str, str]]) -> None:
+        self.topology = self._normalize(topology_dict)
+
+    #        self.invert_topology = {v: k for k, v in self.topology.items()}
+
+    @staticmethod
+    def _normalize(topology_dict):
+        normalized_topology = {}
+        for box, neighbor in topology_dict.items():
+            if not neighbor in normalized_topology:
+                if box < neighbor:
+                    normalized_topology[box] = neighbor
+                else:
+                    normalized_topology[neighbor] = box
+        return normalized_topology
+
+    def __getitem__(self, item):
+        if self.topology.get(item):
+            return self.topology[item]
+        elif item in self.topology.values():
+            for k, v in self.topology.items():
+                if v == item:
+                    return k
+        else:
+            raise KeyError
+
+    def __setitem__(self, key, value):
+        if key in self.topology.values():
+            our_key = ()
+            for k, v in self.topology.items():
+                if v == key:
+                    our_key = k
+            del self.topology[our_key]
+            self.topology[value] = key
+        else:
+            self.topology[key] = value
+
+    def __delitem__(self, key):
+        if key in self.topology.values():
+            our_key = ()
+            for k, v in self.topology.items():
+                if v == key:
+                    our_key = k
+            del self.topology[our_key]
+        elif self.topology.get(key):
+            del self.topology[key]
+        else:
+            raise KeyError
+
+    def __iter__(self):
+        return iter(self.topology)
+
+    def __len__(self):
+        return len(self.topology)
+
+
+if __name__ == "__main__":
+    example1 = {
+        ("R1", "Eth0/0"): ("SW1", "Eth0/1"),
+        ("R2", "Eth0/0"): ("SW1", "Eth0/2"),
+        ("R2", "Eth0/1"): ("SW2", "Eth0/11"),
+        ("R3", "Eth0/0"): ("SW1", "Eth0/3"),
+        ("R4", "Eth0/0"): ("R3", "Eth0/1"),
+        ("R5", "Eth0/0"): ("R3", "Eth0/2"),
+        ("SW1", "Eth0/1"): ("R1", "Eth0/0"),
+        ("SW1", "Eth0/2"): ("R2", "Eth0/0"),
+        ("SW1", "Eth0/3"): ("R3", "Eth0/0"),
+    }
+    example2 = {("R1", "Eth0/4"): ("R7", "Eth0/0"), ("R1", "Eth0/6"): ("R9", "Eth0/0")}
+    t1 = Topology(example1)
+
+    pprint(f"{t1.topology=}")
+    pprint(f"{t1[('SW1', 'Eth0/1')]=}")
+    #    pprint(f"{t1[('SW123', 'Eth0/1')]=}")
+    # t1[("R1", "Eth0/0")] = ("SW1", "Eth0/12")
+    # pprint(f"{t1.topology}")
+    t1[("R4", "Eth0/0")] = ("SW122", "Eth0/19")
+    pprint(f"{t1.topology}")
+    del t1[("R4", "Eth0/0")]
+    #    del t1[("R445", "Eth0/0")]
+    pprint(f"{t1.topology}")
+# pprint(f"{iter(t1)=}")
+# pprint(f"{t1.keys()=}")
+# pprint(f"{t1.values()=}")
+# pprint(f"{t1.items()=}")
+# pprint(f"{t1.get(('R2', 'Eth0/0'))=}")
+# pprint(f"{t1.pop(('R2', 'Eth0/0'))=}")
+# t2 = Topology(example2)
+# pprint(f"{t2.topology=}")
+# t1.update(t2)
+# pprint(f"{t1.topology}")

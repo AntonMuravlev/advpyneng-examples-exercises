@@ -145,14 +145,69 @@ In [15]: t1.topology
 Out[15]: {}
 
 """
+from typing import Dict, List, Tuple
+from collections.abc import MutableMapping
+from pprint import pprint
 
-example1 = {
-    ("R1", "Eth0/0"): ("SW1", "Eth0/1"),
-    ("R2", "Eth0/0"): ("SW1", "Eth0/2"),
-    ("R2", "Eth0/1"): ("SW2", "Eth0/11"),
-    ("R3", "Eth0/0"): ("SW1", "Eth0/3"),
-    ("R4", "Eth0/0"): ("R3", "Eth0/1"),
-    ("R5", "Eth0/0"): ("R3", "Eth0/2"),
-}
 
-example2 = {("R1", "Eth0/4"): ("R7", "Eth0/0"), ("R1", "Eth0/6"): ("R9", "Eth0/0")}
+class Topology(MutableMapping):
+    def __init__(self, topology_dict: Dict[Tuple[str, str], Tuple[str, str]]) -> None:
+        self.topology = self._normalize(topology_dict)
+
+    @staticmethod
+    def _normalize(
+        topology_dict: Dict[Tuple[str, str], Tuple[str, str]]
+    ) -> Dict[Tuple[str, str], Tuple[str, str]]:
+        normalized_topology = {}
+        for box, neighbor in topology_dict.items():
+            if not neighbor in normalized_topology:
+                normalized_topology[box] = neighbor
+        return normalized_topology
+
+    def __getitem__(self, item):
+        return self.topology[item]
+
+    def __setitem__(self, key, value):
+        self.topology[key] = value
+
+    def __delitem__(self, key):
+        del self.topology[key]
+
+    def __iter__(self):
+        return iter(self.topology)
+
+    def __len__(self):
+        return len(self.topology)
+
+
+if __name__ == "__main__":
+    example1 = {
+        ("R1", "Eth0/0"): ("SW1", "Eth0/1"),
+        ("R2", "Eth0/0"): ("SW1", "Eth0/2"),
+        ("R2", "Eth0/1"): ("SW2", "Eth0/11"),
+        ("R3", "Eth0/0"): ("SW1", "Eth0/3"),
+        ("R4", "Eth0/0"): ("R3", "Eth0/1"),
+        ("R5", "Eth0/0"): ("R3", "Eth0/2"),
+    }
+
+    example2 = {("R1", "Eth0/4"): ("R7", "Eth0/0"), ("R1", "Eth0/6"): ("R9", "Eth0/0")}
+    t1 = Topology(example1)
+
+    pprint(f"{t1.topology=}")
+    pprint(f"{t1[('R1', 'Eth0/0')]=}")
+    t1[("R1", "Eth0/0")] = ("SW1", "Eth0/12")
+    pprint(f"{t1.topology}")
+    t1[("R6", "Eth0/0")] = ("SW1", "Eth0/17")
+    pprint(f"{t1.topology}")
+    del t1[("R6", "Eth0/0")]
+    pprint(f"{t1.topology}")
+    pprint(f"{iter(t1)=}")
+    pprint(f"{t1.keys()=}")
+    pprint(f"{t1.values()=}")
+    pprint(f"{t1.items()=}")
+    pprint(f"{t1.get(('R2', 'Eth0/0'))=}")
+    pprint(f"{t1.pop(('R2', 'Eth0/0'))=}")
+    t2 = Topology(example2)
+    pprint(f"{t2.topology=}")
+    t1.update(t2)
+    pprint(f"{t1.topology}")
