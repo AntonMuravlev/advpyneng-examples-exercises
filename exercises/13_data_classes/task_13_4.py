@@ -68,4 +68,62 @@ In [15]: net1.unassigned
 Out[15]: {'10.1.1.2', '10.1.1.4', '10.1.1.5'}
 
 """
+from dataclasses import dataclass, field
+import ipaddress
 
+
+@dataclass
+class IPv4Network:
+    network: str
+    broadcast: str = field(init=False)
+    gw: str = None
+    hosts: tuple = field(init=False)
+    allocated: set = field(default_factory=set)
+    unassigned: set = field(init=False)
+
+    def __post_init__(self):
+        _net = ipaddress.ip_network(self.network)
+        self.broadcast = str(_net.broadcast_address)
+        self.hosts = tuple(str(h) for h in _net.hosts())
+        self.unassigned = set(self.hosts)
+        if self.gw:
+            self.allocated.add(self.gw)
+            self.unassigned.remove(self.gw)
+
+    def allocate_ip(self, ip):
+        if ip in self.hosts and ip not in self.allocated:
+            self.allocated.add(ip)
+            self.unassigned.remove(ip)
+        else:
+            raise ValueError
+
+    def free_ip(self, ip):
+        if ip in self.hosts and ip in self.allocated:
+            self.allocated.remove(ip)
+            self.unassigned.add(ip)
+        else:
+            raise ValueError
+
+
+if __name__ == "__main__":
+    # Примеры обращения к переменным и вызова методов
+    net1 = IPv4Network("10.1.1.0/29")
+    # net1 = IPv4Network('10.1.1.0/29', gw="10.1.1.1")
+    print(f"{net1.broadcast=}")
+    print(f"{net1.hosts=}")
+    print(f"{net1.allocated=}")
+    print(f"{net1.unassigned=}")
+
+    # allocate ip:
+    print(f">>> {net1.allocate_ip('10.1.1.6')=}")
+    print(f">>> {net1.allocate_ip('10.1.1.3')=}")
+    print(f"{net1.allocated=}")
+    print(f"{net1.unassigned=}")
+    print(f"<<< {net1.free_ip('10.1.1.3')=}")
+    print(f"{net1.allocated=}")
+    print(f"{net1.unassigned=}")
+    print(f">>> {net1.allocate_ip('10.1.1.3')=}")
+    # print(f">>> {net1.allocate_ip('10.1.1.3')=}") # ValueError
+    # print(f">>> {net1.allocate_ip('10.1.1.113')=}") # ValueError
+    print(f"{net1.allocated=}")
+    print(f"{net1.unassigned=}")

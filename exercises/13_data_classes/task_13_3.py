@@ -22,7 +22,7 @@ Out[5]: {'price': 35.0, 'quantity': 5, 'title': 'Good Omens', 'total': 175.0}
 которые созданы через property.
 
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 
 
 @dataclass
@@ -47,3 +47,12 @@ class Book:
         if not value >= 0:
             raise ValueError("Значение должно быть положительным")
         self._price = float(value)
+
+    def to_dict(self):
+        out_dict = {d: self.__getattribute__(d) for d in dir(self) if "_" not in d}
+        return out_dict
+
+
+if __name__ == "__main__":
+    b1 = Book("Good Omens", 35, 5)
+    print(b1.to_dict())
