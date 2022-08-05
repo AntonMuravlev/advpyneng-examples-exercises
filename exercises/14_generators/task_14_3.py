@@ -58,6 +58,12 @@ def filter_by_mask(iterable, mask):
             yield line
 
 
+def filter_data_by_attr(iterable, attr_name, attr_value):
+    for line in iterable:
+        if line.__getattribute__(f"{attr_name}") == attr_value:
+            yield line
+
+
 if __name__ == "__main__":
     with open("rib_table.csv") as f:
         reader = csv.reader(f)

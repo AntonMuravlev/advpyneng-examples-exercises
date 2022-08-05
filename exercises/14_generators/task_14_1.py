@@ -15,3 +15,16 @@
 Проверить работу генератора на примере файла config_r1.txt.
 
 """
+
+
+def get_ip_from_cfg(filename):
+    with open(filename) as f:
+        for line in f:
+            if line.startswith(" ip address"):
+                yield line.split()[2], line.split()[3]
+
+
+if __name__ == "__main__":
+    g1 = get_ip_from_cfg("config_r1.txt")
+    for ip_mask in g1:
+        print(ip_mask)

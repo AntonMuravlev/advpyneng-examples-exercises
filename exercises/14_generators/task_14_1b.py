@@ -39,3 +39,27 @@ In [3]: for d in get_intf_ip_from_files("config_r1.txt", "config_r2.txt"):
            'Loopback0': ('10.2.2.2', '255.255.255.255')}}
 
 """
+from pprint import pprint
+
+
+def get_intf_ip_from_files(*args):
+
+    for filename in args:
+        with open(filename) as f:
+            for line in f:
+                if line.startswith("hostname"):
+                    hostname = line.split()[1]
+                    out_dict = {hostname: {}}
+                if line.startswith("interface"):
+                    intf = line.split()[1]
+                if line.startswith(" ip address"):
+                    out_dict[hostname].update(
+                        {intf: (line.split()[2], line.split()[3])}
+                    )
+            yield out_dict
+
+
+if __name__ == "__main__":
+    g1 = get_intf_ip_from_files("config_r1.txt", "config_r2.txt")
+    for dev in g1:
+        pprint(dev)

@@ -15,3 +15,18 @@
 
 Проверить работу генератора на примере файла config_r1.txt.
 """
+
+
+def get_intf_ip(filename):
+    with open(filename) as f:
+        for line in f:
+            if line.startswith("interface"):
+                intf = line.split()[1]
+            if line.startswith(" ip address"):
+                yield intf, line.split()[2], line.split()[3]
+
+
+if __name__ == "__main__":
+    g1 = get_intf_ip("config_r1.txt")
+    for intf in g1:
+        print(intf)

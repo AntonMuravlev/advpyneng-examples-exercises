@@ -28,16 +28,17 @@ def send_show_command(device, command):
     return f"{prompt}{command}\n{result}\n"
 
 
-def send_show_command_to_devices(devices, command, filename, limit=3):
+def send_show_command_to_devices(devices, command, limit=3):
     with ThreadPoolExecutor(max_workers=limit) as executor:
         results = executor.map(send_show_command, devices, repeat(command))
-    with open(filename, "w") as f:
         for output in results:
-            f.write(output)
+            yield output
 
 
 if __name__ == "__main__":
     command = "sh ip int br"
     with open("devices.yaml") as f:
         devices = yaml.safe_load(f)
-    send_show_command_to_devices(devices, command, "result.txt")
+    with open("result.txt", "w") as f:
+        for output in send_show_command_to_devices(devices, command):
+            f.write(output)

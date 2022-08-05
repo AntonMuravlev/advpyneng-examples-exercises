@@ -1,0 +1,20 @@
+R1#sh ip int br
+Interface                  IP-Address      OK? Method Status                Protocol
+Ethernet0/0                192.168.122.101 YES NVRAM  up                    up      
+Ethernet0/1                unassigned      YES NVRAM  administratively down down    
+Ethernet0/2                unassigned      YES NVRAM  administratively down down    
+Ethernet0/3                unassigned      YES NVRAM  administratively down down    
+Loopback1                  10.10.10.1      YES NVRAM  up                    up      
+Loopback2                  10.10.10.2      YES NVRAM  up                    up      
+R2#sh ip int br
+Interface                  IP-Address      OK? Method Status                Protocol
+Ethernet0/0                192.168.122.102 YES NVRAM  up                    up      
+Ethernet0/1                unassigned      YES NVRAM  administratively down down    
+Ethernet0/2                unassigned      YES NVRAM  administratively down down    
+Ethernet0/3                unassigned      YES NVRAM  administratively down down    
+R3#sh ip int br
+Interface                  IP-Address      OK? Method Status                Protocol
+Ethernet0/0                192.168.122.103 YES NVRAM  up                    up      
+Ethernet0/1                unassigned      YES NVRAM  administratively down down    
+Ethernet0/2                unassigned      YES NVRAM  administratively down down    
+Ethernet0/3                unassigned      YES NVRAM  administratively down down    
