@@ -63,19 +63,37 @@ ScrapliCommandFailure: Команда "logging" выполнилась с оши
 """
 
 # списки команд с ошибками и без:
-commands_with_errors = ["logging 0255.255.1", "logging", "a"]
-correct_commands = ["logging buffered 20010", "ip http server"]
 
 import asyncio
 import yaml
+from scrapli import AsyncScrapli
+from scrapli.exceptions import ScrapliException, ScrapliCommandFailure
 
 
+async def configure_router(device, config_commands):
+    try:
+        async with AsyncScrapli(**device) as ssh:
+            if isinstance(config_commands, str):
+                config_commands = [config_commands]
+            replies = await ssh.send_configs(config_commands, stop_on_failed=True)
+            for reply in replies:
+                if reply.failed:
+                    raise ScrapliCommandFailure(
+                        f'Команда "{reply.channel_input}" выполнилась с ошибкой '
+                        f'"{reply.result}" на устройстве {device["host"]}'
+                    )
+        return replies.result
+    except ScrapliException as error:
+        raise error
 
-if __name__ == '__main__':
-    with open('devices_scrapli.yaml') as f:
+
+if __name__ == "__main__":
+    commands_with_errors = ["logging 0255.255.1", "logging", "a"]
+    correct_commands = ["logging buffered 20010", "ip http server"]
+
+    with open("devices_scrapli.yaml") as f:
         devices = yaml.safe_load(f)
     # примеры вызова функции (не будут работать до выполнения задания)
-    print(asyncio.run(configure_router(devices[0], correct_commands + commands_with_errors)))
-    print(asyncio.run(configure_router(devices[0], correct_commands)))
-    print(asyncio.run(configure_router(devices[0], commands_with_errors[1])))
-
+    #   print(asyncio.run(configure_router(devices[0], correct_commands + commands_with_errors)))
+    #   print(asyncio.run(configure_router(devices[0], correct_commands)))
+    print(asyncio.run(configure_router(devices[1], commands_with_errors[1])))

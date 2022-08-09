@@ -20,8 +20,32 @@
 
 Для заданий в этом разделе нет тестов!
 """
-commands = [
-    "router ospf 55",
-    "auto-cost reference-bandwidth 1000000",
-    "network 0.0.0.0 255.255.255.255 area 0",
-]
+import asyncio
+import asyncssh
+import yaml
+from pprint import pprint
+from task_17_1 import send_config_commands
+
+
+async def configure_devices(devices, config_commands):
+    coroutines = [
+        send_config_commands(**device, config_commands=config_commands)
+        for device in devices
+    ]
+    result = await asyncio.gather(*coroutines)
+    out_dict = {device["host"]: out
+            for device in devices
+            for out in result}
+    return out_dict
+
+
+if __name__ == "__main__":
+    with open("devices.yaml") as f:
+        devices = yaml.safe_load(f)
+
+    config_commands = [
+        "int loopback999",
+        "ip add 99.99.99.99 255.255.255.255",
+        "no shut",
+    ]
+    pprint(asyncio.run(configure_devices(devices, config_commands)))

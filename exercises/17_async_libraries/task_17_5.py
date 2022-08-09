@@ -36,28 +36,40 @@ configure_router из задания 17.4.
 Для заданий в этом разделе нет тестов!
 """
 
-ospf = [
-    "router ospf 55",
-    "auto-cost reference-bandwidth 1000000",
-    "network 0.0.0.0 255.255.255.255 area 0",
-]
-logging_with_error = "logging 0255.255.1"
-logging_correct = "logging buffered 20010"
-
-host_commands_dict = {
-    "192.168.100.2": logging_correct,
-    "192.168.100.3": logging_with_error,
-    "192.168.100.1": ospf,
-}
 
 import asyncio
+from pprint import pprint
 import yaml
+from task_17_4 import configure_router
 
 
+async def configure_net_devices(devices, device_commands_map):
+    hosts = host_commands_dict.keys()
+    actual_devices = [device for device in devices if device["host"] in hosts]
+    actual_hosts = [device["host"] for device in actual_devices]
+    coroutines = (
+        configure_router(device, device_commands_map[device["host"]])
+        for device in actual_devices
+    )
+    results = await asyncio.gather(*coroutines, return_exceptions=True)
+    out_dict = dict(zip(actual_hosts, results))
+    return out_dict
 
 
 if __name__ == "__main__":
+    ospf = [
+        "router ospf 55",
+        "auto-cost reference-bandwidth 1000000",
+        "network 0.0.0.0 255.255.255.255 area 0",
+    ]
+    logging_with_error = "logging 0255.255.1"
+    logging_correct = "logging buffered 20010"
+
+    host_commands_dict = {
+        "192.168.122.102": logging_correct,
+        "192.168.122.103": logging_with_error,
+        "192.168.122.101": ospf,
+    }
     with open("devices_scrapli.yaml") as f:
         devices = yaml.safe_load(f)
     pprint(asyncio.run(configure_net_devices(devices, host_commands_dict)))
-    pprint(asyncio.run(configure_net_devices(devices[1:], host_commands_dict)))

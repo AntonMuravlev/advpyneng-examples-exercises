@@ -1,12 +1,12 @@
-- host: 192.168.100.1
+- host: 192.168.122.101
   username: cisco
   password: cisco
   enable_password: cisco
-- host: 192.168.100.2
+- host: 192.168.122.102
   username: cisco
   password: cisco
   enable_password: cisco
-- host: 192.168.100.3
+- host: 192.168.122.103
   username: cisco
   password: cisco
   enable_password: cisco
