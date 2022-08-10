@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Задание 18.7
 
 
@@ -37,7 +37,7 @@ https://youtu.be/YdeUxrlbAwk
 и создавать дополнительные функции.
 
 Для заданий в этом разделе нет тестов!
-'''
+"""
 import asyncio
 from scrapli import AsyncScrapli
 from scrapli.exceptions import ScrapliException
@@ -46,10 +46,18 @@ import time
 
 
 def spin():
-    spinner = itertools.cycle('\|/-')
+    spinner = itertools.cycle("\|/-")
     while True:
-        print(f'\r{next(spinner)} Waiting...', end='')
-        time.sleep(0.1)
+        print(f"\r{next(spinner)} Waiting...", end="")
+        asyncio.sleep(0.1)
+
+
+def aspin():
+    spinner = itertools.cycle("\|/-")
+    while True:
+        async for s in spinner
+            print(f"\r{s} Waiting...", end="")
+            time.sleep(0.1)
 
 
 async def send_show(device, command):

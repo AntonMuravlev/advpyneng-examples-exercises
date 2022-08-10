@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Задание 18.6
 
 Создать декоратор для сопрограмм retry, который выполняет декорируемую сопрограмму повторно,
@@ -36,24 +36,31 @@ In [5]: send_show(device_params, 'sh clock')
 
 На каждой итерации должен проверяться результат функции. То есть не просто
 повторяем вызов функции n раз, а каждый раз проверяем его и необходимость повторения.
-'''
+"""
 import asyncio
 from scrapli import AsyncScrapli
 from scrapli.exceptions import ScrapliException
 
-device_params = {
-    "host": "192.168.100.1",
-    "auth_username": "cisco",
-    "auth_password": "cisco",
-    "auth_secondary": "cisco",
-    "auth_strict_key": False,
-    "timeout_socket": 5,
-    "timeout_transport": 10,
-    "platform": "cisco_iosxe",
-    "transport": "asyncssh",
-}
+
+def retry(times):
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            nonlocal times
+            first_out = await func(*args, **kwargs)
+            if not first_out:
+                while times > 0:
+                    out = await func(*args, **kwargs)
+                    if out:
+                        return out
+                    times -= 1
+            return first_out
+
+        return wrapper
+
+    return decorator
 
 
+@retry(times=3)
 async def send_show(device, command):
     print(f'Подключаюсь к {device["host"]}')
     try:
@@ -65,5 +72,16 @@ async def send_show(device, command):
 
 
 if __name__ == "__main__":
+    device_params = {
+        "host": "192.168.122.101",
+        "auth_username": "cisco",
+        "auth_password": "ciscoo",
+        "auth_secondary": "cisco",
+        "auth_strict_key": False,
+        "timeout_socket": 5,
+        "timeout_transport": 10,
+        "platform": "cisco_iosxe",
+        "transport": "asyncssh",
+    }
     output = asyncio.run(send_show(device_params, "show ip int br"))
     print(output)

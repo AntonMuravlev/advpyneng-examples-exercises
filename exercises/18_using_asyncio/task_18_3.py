@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Задание 18.3
 
 Создать сопрограмму (coroutine) get_all_cdp_neighbors. Сопрограмма
@@ -31,26 +31,26 @@ sh_cdp_neighbors_detail_sw1.txt, sh_cdp_neighbors_detail_r1.txt
 и создавать дополнительные функции.
 Для заданий в этом разделе нет тестов!
 
-'''
+"""
 import re
 from pprint import pprint
 import asyncio
-
 import aiofiles
 
 
 async def get_one_neighbor(filename):
     async with aiofiles.open(filename) as f:
-        line = ''
+        line = ""
         while True:
-            while not 'Device ID' in line:
+            while not "Device ID" in line:
                 line = await f.readline()
             neighbor = line
             async for line in f:
-                if '----------' in line:
+                if "----------" in line:
                     break
                 neighbor += line
-            yield neighbor
+            dict_neighbor = parse_neighbor(neighbor)
+            yield dict_neighbor
             line = await f.readline()
             if not line:
                 return
@@ -58,10 +58,11 @@ async def get_one_neighbor(filename):
 
 def parse_neighbor(output):
     regex = (
-        r'Device ID: (\S+).+?'
-        r' IP address: (?P<ip>\S+).+?'
-        r'Platform: (?P<platform>\S+ \S+), .+?'
-        r', Version (?P<ios>\S+),')
+        r"Device ID: (\S+).+?"
+        r" IP address: (?P<ip>\S+).+?"
+        r"Platform: (?P<platform>\S+ \S+), .+?"
+        r", Version (?P<ios>\S+),"
+    )
 
     result = {}
     match = re.search(regex, output, re.DOTALL)
@@ -71,11 +72,17 @@ def parse_neighbor(output):
     return result
 
 
-async def main():
-    cdp_filename = 'sh_cdp_neighbors_detail_sw1.txt'
-    async for neighbor in get_one_neighbor(cdp_filename):
-        pprint(parse_neighbor(neighbor))
+async def get_all_cdp_neighbors(file_list):
+    out_list = []
+    for filename in file_list:
+        hostname = filename.split("_")[-1].split(".")[0]
+        device_dict = {hostname: {}}
+        async for neighbor in get_one_neighbor(filename):
+            device_dict[hostname].update(neighbor)
+        out_list.append(device_dict)
+    return out_list
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    file_list = ["sh_cdp_neighbors_detail_sw1.txt", "sh_cdp_neighbors_detail_r1.txt"]
+    pprint(asyncio.run(get_all_cdp_neighbors(file_list)))
