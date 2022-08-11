@@ -33,10 +33,45 @@ Out[3]: ['*14:08:27.584 UTC Wed Sep 12 2021', '*14:08:27.752 UTC Wed Sep 12 2021
 """
 import asyncio
 import yaml
+import time
+from pprint import pprint
+from netmiko import ConnectHandler
+from scrapli import AsyncScrapli
+from concurrent.futures import ThreadPoolExecutor
+
+
+async def async_show_command(device, command):
+    async with AsyncScrapli(**device) as ssh:
+        output = await ssh.send_command(command)
+        return output.result, device["host"]
+
+
+def sync_show_command(device, command):
+    with ConnectHandler(**device) as ssh:
+        return ssh.send_command(command), device["host"]
+
+
+async def get_info_network_devices(devices, command):
+    executor = ThreadPoolExecutor(max_workers=3)
+    tasks = []
+    for device in devices:
+        if device.get("device_type") == "cisco_ios":
+            loop = asyncio.get_running_loop()
+            sync_task = loop.run_in_executor(
+                executor, sync_show_command, device, command
+            )
+            print(f"Run sync task {sync_task=}")
+            tasks.append(sync_task)
+        else:
+            async_task = asyncio.create_task(async_show_command(device, command))
+            print(f"Run async task {async_task=}")
+            tasks.append(async_task)
+    results = await asyncio.gather(*tasks)
+    return results
 
 
 if __name__ == "__main__":
     with open("devices.yaml") as f:
         devices = yaml.safe_load(f)
     result = asyncio.run(get_info_network_devices(devices, command="sh clock"))
-    print(result)
+    pprint(result)

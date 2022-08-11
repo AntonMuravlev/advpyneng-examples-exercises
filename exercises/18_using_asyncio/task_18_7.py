@@ -44,22 +44,69 @@ from scrapli.exceptions import ScrapliException
 import itertools
 import time
 
+#def spinner(func: F) -> Callable[[VarArg(Any), KwArg(Any)], Any]:
+#    async def wrapper(*args, **kwargs):
+#        # tasks = []
+#        # tasks.append(asyncio.create_task(func(*args, **kwargs)))
+#        # tasks.append(asyncio.create_task(spin()))
+#        # done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+#        # if done:
+#        #    for tasks in pending:
+#        #        task.cancel()
+#        #    result = ",".join([t.result() for t in done])
+#        #    print(result)
+#        #    return result
+#        task1 = asyncio.create_task(func(*args, **kwargs))
+#        task2 = asyncio.create_task(spin())
+#        result = await task1
+#        if result:
+#            task2.cancel()
+#            print(result)
+#            return result
+#
+#    return wrapper
+#
+#
+#async def spin() -> None:
+#    spinner = itertools.cycle("\|/-")
+#    while True:
+#        for s in spinner:
+#            print(f"\r{s} Waiting...", end="")
+#            await asyncio.sleep(0.1)
+
 
 def spin():
     spinner = itertools.cycle("\|/-")
     while True:
         print(f"\r{next(spinner)} Waiting...", end="")
-        asyncio.sleep(0.1)
+        time.sleep(0.1)
 
 
-def aspin():
-    spinner = itertools.cycle("\|/-")
+async def async_gen():
     while True:
-        async for s in spinner
-            print(f"\r{s} Waiting...", end="")
-            time.sleep(0.1)
+        for s in "\|/-":
+            await asyncio.sleep(0.1)
+            yield s
 
 
+async def aspin():
+    spinner = async_gen()
+    async for s in spinner:
+        print(f"\r{s} Waiting...", end="")
+
+
+def spinner(func):
+    async def wrapper(*args, **kwargs):
+        coroutines = [aspin(), func(*args, **kwargs)]
+        for cor in asyncio.as_completed(coroutines):
+            result = await cor
+            break
+        return result
+
+    return wrapper
+
+
+@spinner
 async def send_show(device, command):
     print(f'Подключаюсь к {device["host"]}')
     try:
@@ -71,7 +118,7 @@ async def send_show(device, command):
 
 
 device_params = {
-    "host": "192.168.100.1",
+    "host": "192.168.122.101",
     "auth_username": "cisco",
     "auth_password": "cisco",
     "auth_secondary": "cisco",
